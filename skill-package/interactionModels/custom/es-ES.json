@@ -1,0 +1,147 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "youtube music",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "PlayMusicIntent",
+          "slots": [
+            {
+              "name": "query",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "reproducí {query}",
+            "poné {query}",
+            "buscá {query}",
+            "reproducí la canción {query}",
+            "poné música de {query}",
+            "reproducí {query} por favor",
+            "buscá y reproducí {query}",
+            "poné {query} en youtube music",
+            "reproducí {query} en youtube music"
+          ]
+        },
+        {
+          "name": "AMAZON.PauseIntent",
+          "samples": [
+            "pausá",
+            "pará la música",
+            "detené la música"
+          ]
+        },
+        {
+          "name": "AMAZON.ResumeIntent", 
+          "samples": [
+            "continuá",
+            "reanudá",
+            "seguí reproduciendo"
+          ]
+        },
+        {
+          "name": "AMAZON.NextIntent",
+          "samples": [
+            "siguiente",
+            "próxima canción",
+            "saltá esta canción"
+          ]
+        },
+        {
+          "name": "AMAZON.PreviousIntent",
+          "samples": [
+            "anterior",
+            "canción anterior",
+            "volvé atrás"
+          ]
+        },
+        {
+          "name": "SearchMusicIntent",
+          "slots": [
+            {
+              "name": "artist",
+              "type": "AMAZON.Artist"
+            },
+            {
+              "name": "song",
+              "type": "AMAZON.MusicRecording"
+            }
+          ],
+          "samples": [
+            "buscá canciones de {artist}",
+            "encontrá música de {artist}",
+            "buscá {song}",
+            "encontrá {song}",
+            "poné {artist}",
+            "reproducí {artist}",
+            "poné {artist} en youtube music",
+            "reproducí {artist} en youtube music"
+          ]
+        },
+        {
+          "name": "PlayPlaylistIntent",
+          "slots": [
+            {
+              "name": "playlistName",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "reproducí mi playlist {playlistName}",
+            "poné mi playlist {playlistName}",
+            "reproducí la playlist {playlistName}",
+            "poné la playlist {playlistName}"
+          ]
+        }
+      ],
+      "types": []
+    },
+    "dialog": {
+      "intents": [
+        {
+          "name": "PlayMusicIntent",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "query",
+              "type": "AMAZON.SearchQuery",
+              "confirmationRequired": false,
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.1591621186851.1026365920242"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "prompts": [
+      {
+        "id": "Elicit.Slot.1591621186851.1026365920242",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "¿Qué música te gustaría escuchar?"
+          }
+        ]
+      }
+    ]
+  }
+}

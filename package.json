@@ -1,0 +1,32 @@
+{
+  "name": "youtube-music-alexa-skill",
+  "version": "1.0.0",
+  "description": "Alexa skill para reproducir música de YouTube Music",
+  "main": "lambda/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "ask deploy",
+    "build": "npm install",
+    "lint": "eslint lambda/"
+  },
+  "keywords": [
+    "alexa",
+    "skill",
+    "youtube-music",
+    "aws-lambda"
+  ],
+  "author": "Braian Mellor",
+  "license": "MIT",
+  "dependencies": {
+    "ask-sdk-core": "^2.14.0",
+    "ask-sdk-model": "^1.29.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "@eslint/js": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

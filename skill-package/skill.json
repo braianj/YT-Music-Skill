@@ -1,0 +1,63 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "es-ES": {
+          "summary": "Reproduce música de YouTube Music en tu Alexa",
+          "examplePhrases": [
+            "Alexa, abrí música de YouTube",
+            "Alexa, reproducí Wonderwall en YouTube Music", 
+            "Alexa, buscá música de Oasis"
+          ],
+          "keywords": [
+            "youtube",
+            "música",
+            "reproducir",
+            "canciones"
+          ],
+          "name": "YouTube Music",
+          "description": "Reproduce tu música favorita de YouTube Music directamente en tu dispositivo Alexa. Busca canciones, artistas, álbumes y reproduce tus playlists favoritas.",
+          "largeIconUri": "https://via.placeholder.com/512x512.png?text=YT+Music",
+          "smallIconUri": "https://via.placeholder.com/108x108.png?text=YT"
+        },
+        "en-US": {
+          "summary": "Play YouTube Music on your Alexa device",
+          "examplePhrases": [
+            "Alexa, open YouTube Music",
+            "Alexa, play Wonderwall on YouTube Music",
+            "Alexa, search for Oasis music"
+          ],
+          "keywords": [
+            "youtube",
+            "music",
+            "play",
+            "songs",
+            "streaming"
+          ],
+          "name": "YouTube Music",
+          "description": "Play your favorite music from YouTube Music directly on your Alexa device. Search for songs, artists, albums and play your favorite playlists.",
+          "largeIconUri": "https://via.placeholder.com/512x512.png?text=YT+Music",
+          "smallIconUri": "https://via.placeholder.com/108x108.png?text=YT"
+        }
+      },
+      "isAvailableWorldwide": false,
+      "distributionCountries": ["US", "AR"],
+      "testingInstructions": "Para probar esta skill, di 'Alexa, abre YouTube Music' o 'Alexa, open YouTube Music'",
+      "category": "MUSIC_AND_AUDIO",
+      "distributionMode": "PRIVATE"
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "sourceDir": "lambda"
+        },
+        "interfaces": [
+          {
+            "type": "AUDIO_PLAYER"
+          }
+        ]
+      }
+    },
+    "manifestVersion": "1.0"
+  }
+}
