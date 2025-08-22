@@ -1,33 +1,33 @@
-# Guía de Instalación - YouTube Music Alexa Skill
+# Installation Guide - YouTube Music Alexa Skill
 
-Esta guía te ayudará a instalar y configurar la skill de YouTube Music paso a paso.
+This guide will help you install and configure the YouTube Music skill step by step.
 
-## 📋 Prerrequisitos
+## 📋 Prerequisites
 
-### 1. Cuentas Necesarias
+### 1. Required Accounts
 - **Amazon Developer Account**: [developer.amazon.com](https://developer.amazon.com)
-- **AWS Account**: [aws.amazon.com](https://aws.amazon.com) (nivel gratuito)
-- **YouTube Music Premium**: Para mejores funcionalidades
+- **AWS Account**: [aws.amazon.com](https://aws.amazon.com) (free tier)
+- **YouTube Music Premium**: For better functionality
 
-### 2. Software Requerido
+### 2. Required Software
 ```bash
-# Node.js (versión 18 o superior)
-node --version  # Debe mostrar v18.x.x o superior
+# Node.js (version 18 or higher)
+node --version  # Should show v18.x.x or higher
 
-# npm (viene con Node.js)
+# npm (comes with Node.js)
 npm --version
 
 # Python 3.10+
-python3 --version  # Debe mostrar 3.10.x o superior
+python3 --version  # Should show 3.10.x or higher
 
-# pip (viene con Python)
+# pip (comes with Python)
 pip3 --version
 
 # Git
 git --version
 ```
 
-### 3. Instalar Herramientas de Alexa
+### 3. Install Alexa Tools
 ```bash
 # ASK CLI (Alexa Skills Kit Command Line Interface)
 npm install -g ask-cli
@@ -37,83 +37,83 @@ npm install -g ask-cli
 # Windows: https://aws.amazon.com/cli/
 # Linux: sudo apt install awscli
 
-# Verificar instalación
+# Verify installation
 ask --version
 aws --version
 ```
 
-## 🚀 Instalación
+## 🚀 Installation
 
-### Paso 1: Clonar y Configurar el Proyecto
+### Step 1: Clone and Configure the Project
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone <your-repository-url>
 cd youtube-music-skill
 
-# Instalar dependencias de Node.js
+# Install Node.js dependencies
 npm install
 
-# Instalar dependencias de Python
+# Install Python dependencies
 cd ytmusic-service
 pip3 install -r requirements.txt
 cd ..
 ```
 
-### Paso 2: Configurar AWS
+### Step 2: Configure AWS
 ```bash
-# Configurar credenciales de AWS
+# Configure AWS credentials
 aws configure
 
-# Se te pedirá:
-# AWS Access Key ID: [Tu access key]
-# AWS Secret Access Key: [Tu secret key]
-# Default region name: us-east-1  (recomendado para Alexa)
+# You'll be prompted for:
+# AWS Access Key ID: [Your access key]
+# AWS Secret Access Key: [Your secret key]
+# Default region name: us-east-1  (recommended for Alexa)
 # Default output format: json
 ```
 
-### Paso 3: Configurar ASK CLI
+### Step 3: Configure ASK CLI
 ```bash
-# Inicializar ASK CLI
+# Initialize ASK CLI
 ask configure
 
-# Seleccionar:
+# Select:
 # - Profile: default
 # - AWS Profile: default
-# - Vendor ID: (se detectará automáticamente)
+# - Vendor ID: (will be detected automatically)
 ```
 
-### Paso 4: Configurar YouTube Music Authentication
+### Step 4: Configure YouTube Music Authentication
 ```bash
-# Ejecutar script de configuración
+# Run configuration script
 python3 setup.py
 
-# Seguir las instrucciones para:
-# 1. Obtener el cookie de YouTube Music
-# 2. Configurar oauth.json
-# 3. Probar la conexión
+# Follow instructions to:
+# 1. Get YouTube Music cookie
+# 2. Configure oauth.json
+# 3. Test connection
 ```
 
-### Paso 5: Desplegar la Skill
+### Step 5: Deploy the Skill
 ```bash
-# Desplegar usando el script automático
+# Deploy using the automatic script
 ./deploy.sh
 
-# O manualmente:
+# Or manually:
 ask deploy --target all
 ```
 
-## 🔧 Configuración del Servicio Python
+## 🔧 Python Service Configuration
 
-### Opción 1: Heroku (Gratuito)
+### Option 1: Heroku (Free)
 ```bash
-# Instalar Heroku CLI
-# Crear nueva app
+# Install Heroku CLI
+# Create new app
 heroku create your-ytmusic-app
 
-# Configurar variables de entorno
+# Configure environment variables
 heroku config:set PORT=8080
 
-# Desplegar
+# Deploy
 cd ytmusic-service
 git init
 git add .
@@ -122,67 +122,67 @@ heroku git:remote -a your-ytmusic-app
 git push heroku main
 ```
 
-### Opción 2: Railway (Gratuito)
-1. Ve a [railway.app](https://railway.app)
-2. Conecta tu cuenta de GitHub
-3. Deploya el directorio `ytmusic-service`
-4. Copia la URL generada
+### Option 2: Railway (Free)
+1. Go to [railway.app](https://railway.app)
+2. Connect your GitHub account
+3. Deploy the `ytmusic-service` directory
+4. Copy the generated URL
 
-### Opción 3: Render (Gratuito)
-1. Ve a [render.com](https://render.com)
-2. Conecta tu repositorio
-3. Configura como Web Service
+### Option 3: Render (Free)
+1. Go to [render.com](https://render.com)
+2. Connect your repository
+3. Configure as Web Service
 4. Root Directory: `ytmusic-service`
 5. Start Command: `python app.py`
 
-### Actualizar URL del Servicio
-Una vez desplegado el servicio Python, actualiza la URL:
+### Update Service URL
+Once the Python service is deployed, update the URL:
 
 ```bash
-# Editar archivo de configuración
+# Edit configuration file
 nano lambda/env.json
 
-# Cambiar:
+# Change:
 {
   "YTMUSIC_API_ENDPOINT": "https://your-service-url.herokuapp.com",
   "NODE_ENV": "production"
 }
 
-# Redesplegar Lambda
+# Redeploy Lambda
 ask deploy --target lambda
 ```
 
-## 🧪 Pruebas
+## 🧪 Testing
 
-### 1. Probar el Servicio Python
+### 1. Test the Python Service
 ```bash
-# Verificar que el servicio funciona
+# Verify that the service works
 curl -X POST https://your-service-url/search \\
   -H "Content-Type: application/json" \\
   -d '{"query":"Oasis Wonderwall"}'
 ```
 
-### 2. Probar la Skill Localmente
+### 2. Test the Skill Locally
 ```bash
-# Usar el simulador de ASK
+# Use the ASK simulator
 ask dialog --locale es-ES
 
-# Comandos de prueba:
+# Test commands:
 # > open youtube music
 # > reproducí wonderwall de oasis
 # > pausá
 # > continuá
 ```
 
-### 3. Probar en Dispositivos Alexa
-1. Ve a [alexa.amazon.com](https://alexa.amazon.com)
-2. Ve a "Skills" → "Your Skills" → "Dev"
-3. Encuentra tu skill y habilítala
-4. Di: "Alexa, abrí YouTube Music"
+### 3. Test on Alexa Devices
+1. Go to [alexa.amazon.com](https://alexa.amazon.com)
+2. Go to "Skills" → "Your Skills" → "Dev"
+3. Find your skill and enable it
+4. Say: "Alexa, abrí YouTube Music"
 
-## 📱 Comandos de Prueba
+## 📱 Test Commands
 
-### Español (Argentina)
+### Spanish (Argentina)
 ```
 "Alexa, abrí YouTube Music"
 "Alexa, reproducí Wonderwall de Oasis"
@@ -214,64 +214,64 @@ npm install -g ask-cli
 ### Error: "AWS credentials not configured"
 ```bash
 aws configure
-# Verificar: aws sts get-caller-identity
+# Verify: aws sts get-caller-identity
 ```
 
 ### Error: "YouTube Music API not initialized"
-- Verificar que el servicio Python esté funcionando
-- Comprobar la URL en `lambda/env.json`
-- Revisar logs del servicio
+- Verify that the Python service is running
+- Check the URL in `lambda/env.json`
+- Review service logs
 
 ### Error: "Skill not found on device"
-- Ir a alexa.amazon.com → Skills → Your Skills → Dev
-- Habilitar la skill manualmente
-- Esperar hasta 60 segundos para sincronización
+- Go to alexa.amazon.com → Skills → Your Skills → Dev
+- Enable the skill manually
+- Wait up to 60 seconds for synchronization
 
 ### Error: "No playlists found"
-- Verificar que `oauth.json` esté configurado
-- Comprobar que tienes playlists en YouTube Music
-- Re-ejecutar `python3 setup.py`
+- Verify that `oauth.json` is configured
+- Check that you have playlists in YouTube Music
+- Re-run `python3 setup.py`
 
-## 📊 Monitoreo
+## 📊 Monitoring
 
-### Ver logs de Lambda
+### View Lambda logs
 ```bash
-# Ver logs recientes
+# View recent logs
 aws logs describe-log-groups --log-group-name-prefix "/aws/lambda/ask"
 
-# Ver logs específicos
+# View specific logs
 aws logs tail /aws/lambda/ask-your-skill-name-default --follow
 ```
 
-### Ver logs del servicio Python
-Depende del servicio usado:
+### View Python service logs
+Depends on the service used:
 - **Heroku**: `heroku logs --tail -a your-app-name`
-- **Railway**: Panel de control → Logs
-- **Render**: Panel de control → Logs
+- **Railway**: Control panel → Logs
+- **Render**: Control panel → Logs
 
-## 🆘 Soporte
+## 🆘 Support
 
-Si tienes problemas:
+If you have problems:
 
-1. **Revisar logs**: Lambda y servicio Python
-2. **Verificar configuración**: URLs, credenciales, oauth.json
-3. **Probar componentes**: Servicio Python independientemente
-4. **Consultar documentación**: [Amazon Developer Docs](https://developer.amazon.com/alexa)
+1. **Review logs**: Lambda and Python service
+2. **Verify configuration**: URLs, credentials, oauth.json
+3. **Test components**: Python service independently
+4. **Consult documentation**: [Amazon Developer Docs](https://developer.amazon.com/alexa)
 
-## 🔄 Actualización
+## 🔄 Updates
 
-Para actualizar la skill:
+To update the skill:
 
 ```bash
-# Actualizar código
+# Update code
 git pull origin main
 
-# Reinstalar dependencias si es necesario
+# Reinstall dependencies if necessary
 npm install
 pip3 install -r ytmusic-service/requirements.txt
 
-# Redesplegar
+# Redeploy
 ask deploy --target all
 ```
 
-¡Ya tienes tu skill de YouTube Music funcionando! 🎵
+You now have your YouTube Music skill working! 🎵

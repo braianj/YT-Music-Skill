@@ -1,29 +1,29 @@
 #!/bin/bash
 
-# Script de deployment para YouTube Music Alexa Skill
-# Configura AWS Lambda en el tier gratuito
+# Deployment script for YouTube Music Alexa Skill
+# Configures AWS Lambda on the free tier
 
 set -e
 
 echo "🚀 Deploying YouTube Music Alexa Skill"
 echo "======================================"
 
-# Verificar prerrequisitos
+# Check prerequisites
 echo "🔍 Checking prerequisites..."
 
-# Verificar ASK CLI
+# Check ASK CLI
 if ! command -v ask &> /dev/null; then
     echo "❌ ASK CLI not found. Install with: npm install -g ask-cli"
     exit 1
 fi
 
-# Verificar AWS CLI
+# Check AWS CLI
 if ! command -v aws &> /dev/null; then
     echo "❌ AWS CLI not found. Install from: https://aws.amazon.com/cli/"
     exit 1
 fi
 
-# Verificar Node.js
+# Check Node.js
 if ! command -v node &> /dev/null; then
     echo "❌ Node.js not found. Install from: https://nodejs.org/"
     exit 1
@@ -31,7 +31,7 @@ fi
 
 echo "✅ Prerequisites check passed"
 
-# Verificar configuración de AWS
+# Check AWS configuration
 echo "🔧 Checking AWS configuration..."
 if ! aws sts get-caller-identity &> /dev/null; then
     echo "❌ AWS not configured. Run: aws configure"
@@ -40,11 +40,11 @@ fi
 
 echo "✅ AWS configuration found"
 
-# Instalar dependencias
+# Install dependencies
 echo "📦 Installing Node.js dependencies..."
 npm install
 
-# Verificar que el servicio de Python esté disponible
+# Check that the Python service is available
 echo "🐍 Checking Python service..."
 cd ytmusic-service
 
@@ -53,7 +53,7 @@ if [ ! -f "requirements.txt" ]; then
     exit 1
 fi
 
-# Instalar dependencias de Python si no están instaladas
+# Install Python dependencies if not installed
 if ! python3 -c "import ytmusicapi" 2>/dev/null; then
     echo "📦 Installing Python dependencies..."
     pip3 install -r requirements.txt
@@ -61,10 +61,10 @@ fi
 
 cd ..
 
-# Configurar variables de entorno para Lambda
+# Configure environment variables for Lambda
 echo "🔧 Setting up environment variables..."
 
-# Crear archivo de configuración para lambda
+# Create configuration file for lambda
 cat > lambda/env.json << EOF
 {
   "YTMUSIC_API_ENDPOINT": "https://your-ytmusic-service.herokuapp.com",
@@ -72,12 +72,12 @@ cat > lambda/env.json << EOF
 }
 EOF
 
-echo "⚠️  IMPORTANTE: Actualiza YTMUSIC_API_ENDPOINT en lambda/env.json con tu URL del servicio de Python"
+echo "⚠️  IMPORTANT: Update YTMUSIC_API_ENDPOINT in lambda/env.json with your Python service URL"
 
 # Deploy skill
 echo "🚀 Deploying skill to AWS Lambda..."
 
-# Usar el tier gratuito de Lambda
+# Use Lambda free tier
 export ASK_LAMBDA_MEMORY_SIZE=128
 export ASK_LAMBDA_TIMEOUT=30
 export ASK_LAMBDA_RUNTIME=nodejs18.x

@@ -42,7 +42,7 @@
       },
       "isAvailableWorldwide": false,
       "distributionCountries": ["US", "AR"],
-      "testingInstructions": "Para probar esta skill, di 'Alexa, abre YouTube Music' o 'Alexa, open YouTube Music'",
+      "testingInstructions": "To test this skill, say 'Alexa, abre YouTube Music' or 'Alexa, open YouTube Music'",
       "category": "MUSIC_AND_AUDIO",
       "distributionMode": "PRIVATE"
     },

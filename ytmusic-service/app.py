@@ -10,11 +10,11 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Configurar logging
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Inicializar YTMusic
+# Initialize YTMusic
 yt = None
 
 def initialize_ytmusic():
@@ -31,7 +31,7 @@ def initialize_ytmusic():
         logger.error(f"Error initializing YTMusic: {e}")
         yt = None
 
-# Inicializar al arrancar
+# Initialize on startup
 initialize_ytmusic()
 
 @app.route('/health', methods=['GET'])
@@ -53,10 +53,10 @@ def search_music():
         if not yt:
             return jsonify({'error': 'YouTube Music API not initialized'}), 500
         
-        # Buscar en YouTube Music
+        # Search on YouTube Music
         search_results = yt.search(query, filter='songs', limit=10)
         
-        # Formatear resultados para Alexa
+        # Format results for Alexa
         formatted_results = []
         for result in search_results:
             if result.get('videoId'):
@@ -92,7 +92,7 @@ def get_song_details():
         if not yt:
             return jsonify({'error': 'YouTube Music API not initialized'}), 500
         
-        # Obtener detalles de la canción
+        # Get song details
         song_info = yt.get_song(video_id)
         
         if not song_info:
@@ -116,7 +116,7 @@ def get_playlists():
         if not yt:
             return jsonify({'error': 'YouTube Music API not initialized'}), 500
         
-        # Obtener playlists del usuario (requiere autenticación)
+        # Get user playlists (requires authentication)
         playlists = yt.get_library_playlists(limit=25)
         
         formatted_playlists = []
@@ -145,7 +145,7 @@ def get_playlist_songs(playlist_id):
         if not yt:
             return jsonify({'error': 'YouTube Music API not initialized'}), 500
         
-        # Obtener canciones de la playlist
+        # Get playlist songs
         playlist = yt.get_playlist(playlist_id, limit=100)
         
         if not playlist:

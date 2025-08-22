@@ -1,18 +1,18 @@
 # YouTube Music Alexa Skill
 
-Una skill de Alexa que permite reproducir música de YouTube Music en dispositivos Echo.
+An Alexa skill that allows playing YouTube Music on Echo devices.
 
-## Características
+## Features
 
-- 🎵 Reproduce música de YouTube Music por voz
-- 🌍 Soporte para español (Argentina) e inglés (Estados Unidos)  
-- 🔍 Búsqueda por canción, artista o álbum
-- ⏯️ Controles de reproducción (pausa, continuar, siguiente, anterior)
-- 📱 Funciona con cualquier dispositivo Alexa
+- 🎵 Play YouTube Music via voice commands
+- 🌍 Support for Spanish (Argentina) and English (United States)  
+- 🔍 Search by song, artist, or album
+- ⏯️ Playback controls (pause, resume, next, previous)
+- 📱 Works with any Alexa device
 
-## Comandos de Voz
+## Voice Commands
 
-### Español
+### Spanish
 - "Alexa, abre YouTube Music"
 - "Alexa, reproduce Wonderwall de Oasis"
 - "Alexa, busca música de The Beatles"
@@ -24,7 +24,7 @@ Una skill de Alexa que permite reproducir música de YouTube Music en dispositiv
 - "Alexa, search for The Beatles music"
 - "Alexa, pause" / "Alexa, resume"
 
-## Arquitectura
+## Architecture
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
@@ -33,144 +33,144 @@ Una skill de Alexa que permite reproducir música de YouTube Music en dispositiv
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
-- **Alexa Device**: Captura comandos de voz
-- **AWS Lambda**: Procesa intents y maneja la lógica de la skill
-- **YTMusic Service**: API en Python que interactúa con YouTube Music
+- **Alexa Device**: Captures voice commands
+- **AWS Lambda**: Processes intents and handles skill logic
+- **YTMusic Service**: Python API that interacts with YouTube Music
 
-## Instalación
+## Installation
 
-### Prerrequisitos
+### Prerequisites
 
-1. **Cuenta de Amazon Developer**: [developer.amazon.com](https://developer.amazon.com)
-2. **AWS CLI configurado**: [Guía AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+1. **Amazon Developer Account**: [developer.amazon.com](https://developer.amazon.com)
+2. **Configured AWS CLI**: [AWS CLI Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 3. **ASK CLI**: `npm install -g ask-cli`
-4. **Node.js**: v18 o superior
-5. **Python**: 3.10 o superior
+4. **Node.js**: v18 or higher
+5. **Python**: 3.10 or higher
 
-### Configuración
+### Setup
 
-1. **Clonar el repositorio**:
+1. **Clone the repository**:
    ```bash
    git clone <repository-url>
    cd youtube-music-skill
    ```
 
-2. **Instalar dependencias de Node.js**:
+2. **Install Node.js dependencies**:
    ```bash
    npm install
    ```
 
-3. **Configurar el servicio de Python**:
+3. **Configure the Python service**:
    ```bash
    cd ytmusic-service
    pip install -r requirements.txt
    ```
 
-4. **Configurar autenticación de YouTube Music** (opcional):
+4. **Configure YouTube Music authentication** (optional):
    ```bash
-   # En el directorio ytmusic-service/
+   # In the ytmusic-service/ directory
    python -c "from ytmusicapi import YTMusic; YTMusic.setup(filepath='oauth.json')"
    ```
-   > **Nota**: Sin oauth.json funcionará con búsquedas públicas solamente
+   > **Note**: Without oauth.json, it will work with public searches only
 
-5. **Desplegar la skill**:
+5. **Deploy the skill**:
    ```bash
    ask deploy
    ```
 
-### Configuración para Argentina y Estados Unidos
+### Configuration for Argentina and United States
 
-La skill está configurada para funcionar en ambos países:
+The skill is configured to work in both countries:
 
-- **Distribución**: Estados Unidos y Argentina
-- **Idiomas**: Inglés (en-US) y Español (es-ES)
-- **Modo**: Privado (para uso personal)
+- **Distribution**: United States and Argentina
+- **Languages**: English (en-US) and Spanish (es-ES)
+- **Mode**: Private (for personal use)
 
-## Desarrollo Local
+## Local Development
 
-### Ejecutar el servicio de Python localmente:
+### Run the Python service locally:
 ```bash
 cd ytmusic-service
 python app.py
 ```
 
-### Probar la API:
+### Test the API:
 ```bash
 curl -X POST http://localhost:8080/search \\
   -H "Content-Type: application/json" \\
   -d '{"query":"Oasis Wonderwall"}'
 ```
 
-### Ejecutar tests de la skill:
+### Run skill tests:
 ```bash
 ask dialog --locale es-ES
 ```
 
-## Variables de Entorno
+## Environment Variables
 
-Crear un archivo `.env` en `ytmusic-service/`:
+Create a `.env` file in `ytmusic-service/`:
 
 ```env
 PORT=8080
 YTMUSIC_API_ENDPOINT=http://localhost:8080
 ```
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 youtube-music-skill/
 ├── lambda/
-│   └── index.js                 # Lógica principal de Alexa
+│   └── index.js                 # Main Alexa logic
 ├── skill-package/
-│   ├── skill.json              # Configuración de la skill
+│   ├── skill.json              # Skill configuration
 │   └── interactionModels/
 │       └── custom/
-│           ├── en-US.json      # Modelo en inglés
-│           └── es-ES.json      # Modelo en español
+│           ├── en-US.json      # English model
+│           └── es-ES.json      # Spanish model
 ├── ytmusic-service/
-│   ├── app.py                  # API de YouTube Music
-│   ├── requirements.txt        # Dependencias Python
-│   └── oauth.json             # Autenticación (opcional)
-├── package.json               # Dependencias Node.js
+│   ├── app.py                  # YouTube Music API
+│   ├── requirements.txt        # Python dependencies
+│   └── oauth.json             # Authentication (optional)
+├── package.json               # Node.js dependencies
 └── README.md
 ```
 
-## Limitaciones
+## Limitations
 
-⚠️ **Importante**: Esta skill usa APIs no oficiales de YouTube Music:
+⚠️ **Important**: This skill uses unofficial YouTube Music APIs:
 
-- No está afiliada con Google/YouTube
-- Puede dejar de funcionar si YouTube cambia su API
-- Para uso personal/educativo solamente
-- Respeta los términos de servicio de YouTube Music
+- Not affiliated with Google/YouTube
+- May stop working if YouTube changes their API
+- For personal/educational use only
+- Respect YouTube Music's terms of service
 
 ## Troubleshooting
 
 ### Error: "YouTube Music API not initialized"
-- Verifica que el servicio de Python esté ejecutándose
-- Comprueba la configuración de `YTMUSIC_API_ENDPOINT`
+- Verify that the Python service is running
+- Check the `YTMUSIC_API_ENDPOINT` configuration
 
-### Error: "No se pudo encontrar música"
-- Verifica la conexión a internet
-- Prueba con búsquedas más específicas
-- Comprueba los logs del servicio Python
+### Error: "Could not find music"
+- Check internet connection
+- Try more specific searches
+- Check Python service logs
 
-### La skill no responde en español
-- Configura tu dispositivo Alexa en español
-- Verifica que el modelo `es-ES.json` esté desplegado
+### Skill doesn't respond in Spanish
+- Configure your Alexa device in Spanish
+- Verify that the `es-ES.json` model is deployed
 
-## Contribuir
+## Contributing
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Añade nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Crea un Pull Request
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Create a Pull Request
 
-## Licencia
+## License
 
-MIT License - Ver [LICENSE](LICENSE) para más detalles.
+MIT License - See [LICENSE](LICENSE) for more details.
 
 ## Disclaimer
 
-Esta aplicación no está afiliada, asociada, autorizada, respaldada por, o de alguna manera oficialmente conectada con Google, YouTube, YouTube Music, o cualquiera de sus subsidiarias o afiliadas.
+This application is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Google, YouTube, YouTube Music, or any of their subsidiaries or affiliates.
