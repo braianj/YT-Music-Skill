@@ -1,10 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from ytmusicapi import YTMusic
 import yt_dlp
 import os
 import time
-import threading
 from dotenv import load_dotenv
 import logging
 
@@ -20,31 +18,13 @@ logger = logging.getLogger(__name__)
 # API Key authentication
 API_KEY = os.environ.get('API_KEY', '')
 
-# Initialize YTMusic
-yt = None
-
 # Simple in-memory cache for stream URLs (they expire after ~6 hours)
 stream_cache = {}
 CACHE_TTL = 3600 * 4  # 4 hours (conservative, URLs last ~6h)
 
-
-def initialize_ytmusic():
-    global yt
-    try:
-        oauth_path = os.path.join(os.path.dirname(__file__), 'oauth.json')
-        if os.path.exists(oauth_path):
-            yt = YTMusic(oauth_path)
-            logger.info("YTMusic initialized with oauth.json")
-        else:
-            yt = YTMusic()
-            logger.info("YTMusic initialized without authentication (limited functionality)")
-    except Exception as e:
-        logger.error(f"Error initializing YTMusic: {e}")
-        yt = None
-
-
-# Initialize on startup
-initialize_ytmusic()
+# Search results cache (shorter TTL since search results don't expire)
+search_cache = {}
+SEARCH_CACHE_TTL = 600  # 10 minutes
 
 
 def cleanup_cache():
@@ -53,6 +33,9 @@ def cleanup_cache():
     expired = [k for k, v in stream_cache.items() if now - v['timestamp'] > CACHE_TTL]
     for k in expired:
         del stream_cache[k]
+    expired = [k for k, v in search_cache.items() if now - v['timestamp'] > SEARCH_CACHE_TTL]
+    for k in expired:
+        del search_cache[k]
 
 
 @app.before_request
@@ -74,49 +57,94 @@ def check_api_key():
 def health_check():
     return jsonify({
         'status': 'healthy',
-        'ytmusic_initialized': yt is not None,
-        'cache_size': len(stream_cache)
+        'cache_size': len(stream_cache),
+        'search_cache_size': len(search_cache)
     })
 
 
 @app.route('/search', methods=['POST'])
 def search_music():
+    """Search for songs using yt-dlp's YouTube search.
+
+    Uses yt-dlp ytsearch instead of ytmusicapi because Google blocks
+    ytmusicapi's internal API from datacenter IPs (returns 400).
+    """
     try:
         data = request.get_json()
         query = data.get('query', '')
+        limit = data.get('limit', 10)
 
         if not query:
             return jsonify({'error': 'Query parameter is required'}), 400
 
-        if not yt:
-            return jsonify({'error': 'YouTube Music API not initialized'}), 500
+        # Clamp limit
+        limit = min(max(1, limit), 20)
 
-        # Search on YouTube Music
-        search_results = yt.search(query, filter='songs', limit=10)
+        # Check search cache
+        cache_key = f"{query}:{limit}"
+        if cache_key in search_cache:
+            cached = search_cache[cache_key]
+            if time.time() - cached['timestamp'] < SEARCH_CACHE_TTL:
+                logger.info(f"Search cache hit for '{query}'")
+                return jsonify(cached['data'])
 
-        # Format results for Alexa (without stream_url - use /stream endpoint)
-        formatted_results = []
-        for result in search_results:
-            if result.get('videoId'):
-                artists = result.get('artists', [])
-                artist_name = ', '.join([a['name'] for a in artists]) if artists else 'Unknown Artist'
-                thumbnails = result.get('thumbnails', [{}])
+        # Use yt-dlp to search YouTube Music
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'extract_flat': True,
+            'default_search': 'ytsearch',
+        }
 
-                formatted_result = {
-                    'video_id': result['videoId'],
-                    'title': result.get('title', 'Unknown Title'),
-                    'artist': artist_name,
-                    'album': result.get('album', {}).get('name', '') if result.get('album') else '',
-                    'duration': result.get('duration', 'Unknown'),
-                    'thumbnail': thumbnails[-1].get('url', '') if thumbnails else '',
-                }
-                formatted_results.append(formatted_result)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            search_query = f'ytsearch{limit}:{query}'
+            info = ydl.extract_info(search_query, download=False)
 
-        return jsonify({
-            'query': query,
-            'results': formatted_results,
-            'count': len(formatted_results)
-        })
+            formatted_results = []
+            for entry in info.get('entries', []):
+                if entry and entry.get('id'):
+                    # Parse title to extract artist if possible
+                    title = entry.get('title', 'Unknown Title')
+                    artist = entry.get('uploader', entry.get('channel', 'Unknown Artist'))
+                    # Clean up artist name (remove " - Topic" suffix from YT Music channels)
+                    if artist and artist.endswith(' - Topic'):
+                        artist = artist[:-8]
+
+                    duration_secs = entry.get('duration')
+                    if duration_secs:
+                        mins = int(duration_secs) // 60
+                        secs = int(duration_secs) % 60
+                        duration_str = f"{mins}:{secs:02d}"
+                    else:
+                        duration_str = 'Unknown'
+
+                    formatted_result = {
+                        'video_id': entry['id'],
+                        'title': title,
+                        'artist': artist,
+                        'duration': duration_str,
+                        'duration_seconds': int(duration_secs) if duration_secs else 0,
+                        'thumbnail': entry.get('thumbnails', [{}])[0].get('url', '') if entry.get('thumbnails') else '',
+                    }
+                    formatted_results.append(formatted_result)
+
+            response_data = {
+                'query': query,
+                'results': formatted_results,
+                'count': len(formatted_results)
+            }
+
+            # Cache search results
+            search_cache[cache_key] = {
+                'data': response_data,
+                'timestamp': time.time()
+            }
+
+            # Cleanup old cache entries periodically
+            if len(search_cache) > 100:
+                cleanup_cache()
+
+            return jsonify(response_data)
 
     except Exception as e:
         logger.error(f"Error in search: {e}")
@@ -203,6 +231,7 @@ def get_stream_url():
 
 @app.route('/get_song', methods=['POST'])
 def get_song_details():
+    """Get song details using yt-dlp (replaces ytmusicapi.get_song which is blocked)."""
     try:
         data = request.get_json()
         video_id = data.get('video_id', '')
@@ -210,93 +239,35 @@ def get_song_details():
         if not video_id:
             return jsonify({'error': 'video_id parameter is required'}), 400
 
-        if not yt:
-            return jsonify({'error': 'YouTube Music API not initialized'}), 500
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'extract_flat': False,
+            'skip_download': True,
+        }
 
-        song_info = yt.get_song(video_id)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            url = f'https://music.youtube.com/watch?v={video_id}'
+            info = ydl.extract_info(url, download=False)
 
-        if not song_info:
-            return jsonify({'error': 'Song not found'}), 404
+            artist = info.get('artist', info.get('uploader', info.get('channel', 'Unknown')))
+            if artist and artist.endswith(' - Topic'):
+                artist = artist[:-8]
 
-        video_details = song_info.get('videoDetails', {})
-        return jsonify({
-            'video_id': video_id,
-            'title': video_details.get('title', 'Unknown'),
-            'artist': video_details.get('author', 'Unknown'),
-            'duration': video_details.get('lengthSeconds', '0'),
-        })
+            return jsonify({
+                'video_id': video_id,
+                'title': info.get('title', 'Unknown'),
+                'artist': artist,
+                'duration': info.get('duration', 0),
+                'album': info.get('album', ''),
+                'thumbnail': info.get('thumbnail', ''),
+            })
 
+    except yt_dlp.utils.DownloadError as e:
+        logger.error(f"yt-dlp error getting song details for {video_id}: {e}")
+        return jsonify({'error': 'Song not found or unavailable'}), 404
     except Exception as e:
         logger.error(f"Error getting song details: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/playlists', methods=['GET', 'POST'])
-def get_playlists():
-    try:
-        if not yt:
-            return jsonify({'error': 'YouTube Music API not initialized'}), 500
-
-        # Get user playlists (requires oauth authentication)
-        playlists = yt.get_library_playlists(limit=25)
-
-        formatted_playlists = []
-        for playlist in playlists:
-            thumbnails = playlist.get('thumbnails', [{}])
-            formatted_playlist = {
-                'playlist_id': playlist.get('playlistId', ''),
-                'title': playlist.get('title', 'Unknown Playlist'),
-                'description': playlist.get('description', ''),
-                'count': playlist.get('count', 0),
-                'thumbnail': thumbnails[-1].get('url', '') if thumbnails else ''
-            }
-            formatted_playlists.append(formatted_playlist)
-
-        return jsonify({
-            'playlists': formatted_playlists,
-            'count': len(formatted_playlists)
-        })
-
-    except Exception as e:
-        logger.error(f"Error getting playlists: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/playlist/<playlist_id>', methods=['GET'])
-def get_playlist_songs(playlist_id):
-    try:
-        if not yt:
-            return jsonify({'error': 'YouTube Music API not initialized'}), 500
-
-        playlist = yt.get_playlist(playlist_id, limit=100)
-
-        if not playlist:
-            return jsonify({'error': 'Playlist not found'}), 404
-
-        songs = []
-        for track in playlist.get('tracks', []):
-            if track.get('videoId'):
-                artists = track.get('artists', [])
-                thumbnails = track.get('thumbnails', [{}])
-                song = {
-                    'video_id': track['videoId'],
-                    'title': track.get('title', 'Unknown Title'),
-                    'artist': ', '.join([a['name'] for a in artists]) if artists else 'Unknown Artist',
-                    'duration': track.get('duration', 'Unknown'),
-                    'thumbnail': thumbnails[-1].get('url', '') if thumbnails else '',
-                }
-                songs.append(song)
-
-        return jsonify({
-            'playlist_id': playlist_id,
-            'title': playlist.get('title', 'Unknown Playlist'),
-            'description': playlist.get('description', ''),
-            'songs': songs,
-            'count': len(songs)
-        })
-
-    except Exception as e:
-        logger.error(f"Error getting playlist songs: {e}")
         return jsonify({'error': str(e)}), 500
 
 
