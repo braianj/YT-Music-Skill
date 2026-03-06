@@ -71,7 +71,17 @@ logs/
 # Lambda environment
 lambda/env.json
 
+# Virtual environments
+venv/
+.venv/
+
 # Temporary files
 tmp/
 temp/
 .claude
+
+# pytest
+.pytest_cache/
+
+# Docker
+*.tar

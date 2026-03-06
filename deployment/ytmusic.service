@@ -1,0 +1,20 @@
+[Unit]
+Description=YouTube Music API Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/ytmusic-service
+Environment=PORT=8080
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/opt/ytmusic-service/.env
+ExecStart=/opt/ytmusic-service/venv/bin/python app.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
